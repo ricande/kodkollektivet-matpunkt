@@ -1,0 +1,199 @@
+{
+ "atlas_version": "952bc3b97f22c5fc229b5afdefe1f95a1d4cc9fe",
+ "format": 1,
+ "kontroller": [
+  {
+   "beskrivning": "Academy nås utifrån via internet (extern mätpunkt)",
+   "forvantat": {
+    "status": [
+     200
+    ]
+   },
+   "id": "academy-publik",
+   "kraver": [],
+   "mal": "https://academy.kodkollektivet.se/",
+   "objekt": "academy",
+   "objekt_namn": "Kodkollektivet Academy (academy.kodkollektivet.se)",
+   "rackvidd": "publik-atkomst",
+   "sort": "tjanst",
+   "typ": "http",
+   "uppstart_max": 600
+  },
+  {
+   "beskrivning": "intranätet nås utifrån via internet (extern mätpunkt)",
+   "forvantat": {
+    "status": [
+     200
+    ]
+   },
+   "id": "intranet-publik",
+   "kraver": [
+    "intranet-oauth2-proxy"
+   ],
+   "mal": "https://intranet.kodkollektivet.se/ping",
+   "objekt": "intranet",
+   "objekt_namn": "Intranätet (intranet.kodkollektivet.se)",
+   "rackvidd": "publik-atkomst",
+   "sort": "tjanst",
+   "typ": "http",
+   "uppstart_max": 600
+  },
+  {
+   "beskrivning": "meet-sidan nås utifrån via internet (extern mätpunkt; inte UDP 10000)",
+   "forvantat": {
+    "status": [
+     200
+    ]
+   },
+   "id": "meet-publik",
+   "kraver": [],
+   "mal": "https://meet.kodkollektivet.se/",
+   "objekt": "jitsi",
+   "objekt_namn": "Jitsi Meet (meet.kodkollektivet.se)",
+   "rackvidd": "publik-atkomst",
+   "sort": "tjanst",
+   "typ": "http",
+   "uppstart_max": 600
+  },
+  {
+   "beskrivning": "kundportalen nås utifrån via internet (extern mätpunkt)",
+   "forvantat": {
+    "status": [
+     200
+    ]
+   },
+   "id": "support-publik",
+   "kraver": [],
+   "mal": "https://support.kodkollektivet.se/",
+   "objekt": "kundportal",
+   "objekt_namn": "Kundportal – Zammad (support.kodkollektivet.se)",
+   "rackvidd": "publik-atkomst",
+   "sort": "tjanst",
+   "typ": "http",
+   "uppstart_max": 600
+  },
+  {
+   "beskrivning": "Nextcloud nås utifrån via internet (extern mätpunkt)",
+   "forvantat": {
+    "status": [
+     200
+    ]
+   },
+   "id": "kalender-publik",
+   "kraver": [],
+   "mal": "https://kalender.kodkollektivet.se/status.php",
+   "objekt": "nextcloud",
+   "objekt_namn": "Nextcloud – kalender och mejl (kalender.kodkollektivet.se)",
+   "rackvidd": "publik-atkomst",
+   "sort": "tjanst",
+   "typ": "http",
+   "uppstart_max": 600
+  },
+  {
+   "beskrivning": "Forgejo nås utifrån via internet (extern mätpunkt)",
+   "forvantat": {
+    "status": [
+     200
+    ]
+   },
+   "id": "git-publik",
+   "kraver": [
+    "forgejo"
+   ],
+   "mal": "https://git.kodkollektivet.se/",
+   "objekt": "nginx",
+   "objekt_namn": "nginx (omvänd proxy och statiska webbplatser)",
+   "rackvidd": "publik-atkomst",
+   "sort": "tjanst",
+   "typ": "http",
+   "uppstart_max": 600
+  },
+  {
+   "beskrivning": "webbplatsen nås utifrån via internet (extern mätpunkt)",
+   "forvantat": {
+    "status": [
+     200
+    ]
+   },
+   "id": "webbplats-publik",
+   "kraver": [],
+   "mal": "https://kodkollektivet.se/",
+   "objekt": "webbplats",
+   "objekt_namn": "Kodkollektivets webbplats (kodkollektivet.se)",
+   "rackvidd": "publik-atkomst",
+   "sort": "tjanst",
+   "typ": "http",
+   "uppstart_max": 600
+  },
+  {
+   "beskrivning": "chattens inloggningssida nås utifrån via internet (extern mätpunkt)",
+   "forvantat": {
+    "status": [
+     200
+    ]
+   },
+   "id": "chat-publik",
+   "kraver": [],
+   "mal": "https://chat.kodkollektivet.se/login/",
+   "objekt": "zulip",
+   "objekt_namn": "Zulip – chatt (chat.kodkollektivet.se)",
+   "rackvidd": "publik-atkomst",
+   "sort": "tjanst",
+   "typ": "http",
+   "uppstart_max": 600
+  }
+ ],
+ "tackning": {
+  "antal_kontroller": 47,
+  "inventerade_objekt": 115,
+  "med_kontroller": 25,
+  "per_sort": {
+   "identitet": {
+    "med_kontroller": 0,
+    "totalt": 22,
+    "utan_kontroller": 22
+   },
+   "integration": {
+    "med_kontroller": 0,
+    "totalt": 21,
+    "utan_kontroller": 21
+   },
+   "maskin": {
+    "med_kontroller": 1,
+    "totalt": 9,
+    "utan_kontroller": 8
+   },
+   "schema": {
+    "med_kontroller": 5,
+    "totalt": 9,
+    "utan_kontroller": 4
+   },
+   "tjanst": {
+    "med_kontroller": 19,
+    "totalt": 48,
+    "utan_kontroller": 29
+   },
+   "zon": {
+    "med_kontroller": 0,
+    "totalt": 6,
+    "utan_kontroller": 6
+   }
+  },
+  "utan_kontroller": 90
+ },
+ "tillatna": {
+  "interna_namn": [
+   "academy.kodkollektivet.se",
+   "chat.kodkollektivet.se",
+   "git.kodkollektivet.se",
+   "intranet.kodkollektivet.se",
+   "kalender.kodkollektivet.se",
+   "kodkollektivet.se",
+   "meet.kodkollektivet.se",
+   "support.kodkollektivet.se"
+  ],
+  "interna_natadresser": [],
+  "lokala": []
+ },
+ "utan_kontroller": []
+}
