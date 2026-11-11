@@ -1,85 +1,78 @@
-# Extern mätpunkt (fas C)
+# Kodkollektivet – Extern mätpunkt
 
-Kontroller med räckvidd `publik-atkomst` kan inte mätas från kk-server, eftersom routern saknar
-NAT-loopback. De mäts i stället utifrån, från GitHub Actions.
+En fristående mätpunkt för att kontrollera tillgängligheten hos Kodkollektivets publika webbtjänster.
 
-```
-GitHub Actions (var 15:e min)            kk-server
-  motor.py --extern                        extern_hamta.py (användartimer, var 5:e min)
-  kontrollspec-publik.json   ──resultat──▶   extern.json  ──▶  motor.py (sandlåda)  ──▶ senaste.json
-  → grenen "resultat": senaste.json          (https, ingen omdirigering, ≤ 512 kB,       (webbvyn, kk-status)
-                                              bara id/status/orsak)
-```
+Projektet använder GitHub Actions för att regelbundet genomföra kontroller från en extern nätverksmiljö.
 
-## Vad som skickas var
+## Syfte
 
-- **Till GitHub (publikt repo):**
-  - `motor.py` och `regler.py`, som är samma granskade filer som i drift
-  - `kontrollspec-publik.json`, som bara innehåller de publika kontrollerna: publika adresser och
-    förväntade svar, men inga interna adresser, enheter eller portar mot 127.0.0.1
-  - arbetsflödet `matpunkt.yml`
+Mätpunkten verifierar att utvalda publika tjänster går att nå via internet.
 
-  Inga hemligheter används. Arbetsflödet har bara repots egen `GITHUB_TOKEN` med `contents: write`
-  för grenen `resultat`.
-- **Från GitHub:** `senaste.json` från grenen `resultat`. kk-server behandlar filen som **data**. Den kan
-  bara visa ett utfall (OK, FEL eller OKAND med orsak) för en kontroll som redan står i den granskade
-  `kontrollspec.json`. Den kan aldrig lägga till eller ändra kontroller. Okända id ignoreras.
+Genom att utföra kontrollerna utanför Kodkollektivets egen nätverksmiljö kan vi upptäcka tillgänglighetsproblem som inte nödvändigtvis framgår av lokala hälsokontroller.
 
-## Statusar på kk-server
+## Så fungerar det
 
-| Läge | Status för de publika kontrollerna |
+1. GitHub Actions startar en kontrollkörning enligt ett schema.
+2. Kontrollmotorn läser `kontrollspec-publik.json`.
+3. Endast uttryckligen definierade publika mål kontrolleras.
+4. Resultaten sammanställs som JSON.
+5. Den senaste mätningen publiceras på grenen `resultat`.
+
+Kontrollerna är skrivskyddade och ändrar inte de tjänster som undersöks.
+
+## Projektets filer
+
+| Fil | Beskrivning |
 |---|---|
-| `extern.json` saknas eller är ogiltig | OKAND ("ingen extern mätning tillgänglig") |
-| mätningen är äldre än 60 min | OKAND ("extern mätning är inaktuell") |
-| kontrollen saknas i mätningen | OKAND ("synka kontrollspec-publik.json") |
-| annars | mätpunktens OK, FEL eller OKAND med tiden för mätningen |
+| `motor.py` | Kontrollmotor för tillgänglighetsmätningar |
+| `regler.py` | Validering av tillåtna kontrolltyper och mål |
+| `kontrollspec-publik.json` | Definitioner av de publika kontrollerna |
+| `.github/workflows/matpunkt.yml` | Schemaläggning och körning via GitHub Actions |
 
-Uppstartsläget väntar aldrig på den externa mätpunkten. Ett FEL utifrån är ett observerat fel och
-kan ge larm, precis som andra FEL.
+## Körning
 
-## Sätta upp repot (ricande, en gång)
+Mätpunkten körs normalt var 15:e minut.
 
-Filerna läggs fram av `publicera.sh` i
-`/srv/kodkollektivet/systematlas/motor/extern/` på kk-server.
+En manuell körning kan startas via:
 
-1. På GitHub: **New repository**
-   - namn: till exempel `kodkollektivet-matpunkt`
-   - synlighet: **Public** (Actions-minuter är gratis för publika repon)
-   - kryssa i **Add a README file**
-2. Hämta filerna till din dator:
-   ```bash
-   scp -r kk-server:/srv/kodkollektivet/systematlas/motor/extern ~/matpunkt
-   ```
-3. I repot: **Add file → Upload files**. Dra in `motor.py`, `regler.py` och
-   `kontrollspec-publik.json` från `~/matpunkt`, och klicka på **Commit changes**.
-4. **Add file → Create new file**
-   - namn: `.github/workflows/matpunkt.yml`
-   - innehåll: hela `~/matpunkt/matpunkt.yml`
+**GitHub → Actions → matpunkt → Run workflow**
 
-   Klicka på **Commit changes**.
-5. **Settings → Actions → General → Workflow permissions**: välj **Read and write permissions** och
-   spara. Arbetsflödet begär bara `contents: write`.
-6. **Actions → matpunkt → Run workflow**. Efter cirka en minut finns grenen `resultat` med
-   `senaste.json`.
-7. Ange adressen på kk-server. Byt `<konto>` och `<repo>` mot dina värden. Adressen är inte hemlig:
-   ```bash
-   ssh -t kk-server 'echo "https://raw.githubusercontent.com/<konto>/<repo>/resultat/senaste.json" > /srv/kodkollektivet/systematlas/extern-url'
-   ```
-   Installera sedan hämtningen med `intranet/systematlas/kontroll/installera-extern.sh`.
+Kontrollresultaten publiceras i:
 
-## När de publika kontrollerna ändras
+`resultat/senaste.json`
 
-Ladda upp den nya `kontrollspec-publik.json`, och `motor.py` och `regler.py` om de har ändrats, med
-**Add file → Upload files**. Tills dess blir nya publika kontroller OKAND med orsaken
-"synka kontrollspec-publik.json". Det är aldrig ett falskt OK.
+Resultatfilen innehåller bland annat kontrollernas identifierare, status, tidsstämpel och en kort beskrivning av utfallet.
 
-## Kända begränsningar
+## Kontrollstatus
 
-- **GitHub stänger av schemalagda arbetsflöden efter 60 dagar utan aktivitet i repot.** Då blir
-  mätningen inaktuell, och de publika kontrollerna blir OKAND. kk-status visar det. Åtgärden är
-  **Actions → matpunkt → Enable workflow**, eller en commit i repot.
-- GitHubs schema är ungefärligt. Körningar kan bli försenade eller utebli under hög last, och därför
-  godtas mätningar upp till 60 minuter gamla.
-- Mätpunkten står i ett datacenter (Azure). Den visar om tjänsterna nås från internet, inte hur det
-  ser ut från ett visst hemnät.
-- UDP (Jitsi 10000) och VLAN-isolering mäts inte här.
+| Status | Betydelse |
+|---|---|
+| `OK` | Kontrollen uppfyllde det förväntade resultatet |
+| `FEL` | Kontrollen genomfördes men uppfyllde inte förväntningarna |
+| `OKAND` | Kontrollen kunde inte genomföras eller avgöras |
+
+Varje resultat gäller endast den funktion som den aktuella kontrollen faktiskt mäter.
+
+## Begränsningar
+
+- GitHub Actions erbjuder inte garanterad körning vid en exakt tidpunkt.
+- Schemalagda arbetsflöden kan inaktiveras efter längre tids inaktivitet.
+- En lyckad HTTP-kontroll bevisar inte att samtliga funktioner i en tjänst fungerar.
+- Resultaten representerar tillgänglighet från GitHubs körmiljö och behöver inte motsvara upplevelsen från alla nätverk.
+- Mätpunkten är ett komplement till annan övervakning och ersätter inte fullständiga funktions- eller säkerhetstester.
+
+## Säkerhet
+
+Mätpunkten arbetar enbart mot uttryckligen tillåtna kontrollmål.
+
+Ingen administrativ åtkomst till de kontrollerade tjänsterna krävs.
+
+Publika kontrollspecifikationer ska inte innehålla autentiseringsuppgifter, privata nycklar eller information om interna nätverksmiljöer.
+
+## Om Kodkollektivet
+
+Kodkollektivet är ett svenskt initiativ för gemensam mjukvaruutveckling, kunskapsdelning och öppen källkod.
+
+Mer information finns på:
+
+**https://kodkollektivet.se**
